@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>每日激励 · 绿意陪伴</title>
+  <style>
+    :root {
+      --gold: #c8963e;
+      --gold-light: #e8c97a;
+      --gold-dark: #8b5e2b;
+      --warm-bg: #f0f5ed;
+      --card-bg: rgba(255, 255, 250, 0.7);
+      --text-primary: #2b3a1f;
+      --text-secondary: #4d5e3b;
+      --serene-green: #6f8c5d;
+      --serene-light: #b9cfaa;
+      --serene-bg: #e8f1e4;
+      --leaf-green: #7c9d6e;
+      --shadow-soft: 0 4px 20px rgba(40, 60, 20, 0.08);
+      --shadow-card: 0 8px 32px rgba(30, 50, 20, 0.10);
+      --shadow-gold: 0 6px 24px rgba(160, 120, 40, 0.15);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --transition-smooth: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Serif SC', 'Source Han Serif CN', 'STSong', 'Songti SC', '华文宋体', 'Georgia', serif;
+      background: #f0f5ed;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+      position: relative;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
+      background: var(--warm-bg);
+      transition: background 1s ease;
+    }
+    .app-container.custom-bg { background: var(--warm-bg); }
+    .app-container.custom-bg .bg-image-layer { opacity: 1; }
+
+    /* 自定义背景图层 */
+    .bg-image-layer {
+      position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px; height: 100vh; height: 100dvh;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+      opacity: 0; transition: opacity 1s ease; z-index: 0; pointer-events: none;
+    }
+    .bg-image-layer.active { opacity: 1; }
+    .bg-image-layer::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(240, 245, 237, 0.5); z-index: 1;
+    }
+
+    /* 默认绿色渐变背景 */
+    .default-gradient-bg {
+      position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px; height: 100vh; height: 100dvh;
+      background:
+        radial-gradient(ellipse at 20% 20%, #e3f0d8 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, #d4e8cd 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, #f4f9f1 0%, #e8f0e3 100%);
+      z-index: 0; pointer-events: none; transition: opacity 1s ease;
+    }
+    .default-gradient-bg.hidden { opacity: 0; }
+
+    /* 内容层 */
+    .content-layer {
+      position: relative; z-index: 2; min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column; padding: 20px 20px 30px;
+    }
+
+    /* 漂浮的树叶、花、花瓣装饰 */
+    .floating-decorations {
+      position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px; height: 100vh; height: 100dvh;
+      z-index: 1; pointer-events: none; overflow: hidden;
+    }
+    .deco {
+      position: absolute; opacity: 0.35; animation: floatAround 12s ease-in-out infinite;
+    }
+    .deco.leaf1 { top: 8%; left: 10%; font-size: 1.8rem; animation-duration: 15s; }
+    .deco.leaf2 { top: 18%; right: 12%; font-size: 2.2rem; animation-duration: 18s; animation-delay: 2s; }
+    .deco.flower1 { top: 55%; left: 8%; font-size: 2rem; animation-duration: 13s; animation-delay: 1s; }
+    .deco.flower2 { top: 65%; right: 10%; font-size: 1.9rem; animation-duration: 16s; animation-delay: 3s; }
+    .deco.petal1 { top: 78%; left: 25%; font-size: 1.4rem; animation-duration: 11s; }
+    .deco.petal2 { top: 35%; right: 18%; font-size: 1.3rem; animation-duration: 14s; animation-delay: 4s; }
+    .deco.petal3 { top: 42%; left: 40%; font-size: 1.6rem; animation-duration: 17s; animation-delay: 1.5s; }
+    .deco.branch { top: 72%; right: 5%; font-size: 2.5rem; animation-duration: 20s; transform: rotate(10deg); }
+
+    @keyframes floatAround {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(15px, -20px) rotate(3deg); }
+      50% { transform: translate(-8px, -8px) rotate(-2deg); }
+      75% { transform: translate(-12px, 18px) rotate(4deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    /* 页面切换 */
+    .page { display: none; flex-direction: column; flex: 1; animation: pageFadeIn 0.5s ease forwards; }
+    .page.active { display: flex; }
+    @keyframes pageFadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 主页 */
+    .home-header { text-align: center; padding-top: 10vh; padding-bottom: 20px; }
+    .home-header .welcome-text { font-size: 0.95rem; color: var(--text-secondary); letter-spacing: 0.08em; margin-bottom: 6px; }
+    .home-header .title { font-size: 2rem; font-weight: 700; color: var(--text-primary); letter-spacing: 0.04em; line-height: 1.3; }
+    .home-header .title .accent { color: var(--gold); }
+    .cards-wrapper { flex: 1; display: flex; flex-direction: column; gap: 18px; justify-content: center; max-width: 380px; width: 100%; margin: 0 auto; padding: 10px 4px; }
+    .card-entry {
+      display: block; width: 100%; padding: 28px 26px 26px; border-radius: var(--radius-lg);
+      border: 1.5px solid rgba(120, 140, 100, 0.2); cursor: pointer; text-decoration: none;
+      position: relative; overflow: hidden; transition: all var(--transition-smooth);
+      background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-card); animation: gentleFloat 5s ease-in-out infinite;
+    }
+    .card-entry:nth-child(2) { animation-delay: 1.2s; }
+    .card-entry:active { transform: scale(0.97); box-shadow: var(--shadow-soft); }
+    .card-entry::before {
+      content: ''; position: absolute; top: -40%; right: -20%; width: 180px; height: 180px;
+      border-radius: 50%; opacity: 0.12; pointer-events: none;
+    }
+    .card-entry.card-serenity::before { background: var(--serene-green); }
+    .card-entry.card-wealth::before { background: var(--gold); }
+    .card-entry .card-icon { font-size: 2.2rem; margin-bottom: 8px; display: block; position: relative; z-index: 1; }
+    .card-entry .card-label { font-size: 1.35rem; font-weight: 700; color: var(--text-primary); letter-spacing: 0.05em; }
+    .card-entry .card-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; font-weight: 400; }
+    .card-entry.card-serenity { border-left: 4px solid var(--serene-green); }
+    .card-entry.card-wealth { border-left: 4px solid var(--gold); }
+    @keyframes gentleFloat {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* 上传背景 */
+    .bg-upload-area { text-align: center; padding: 16px 0 8px; position: relative; z-index: 3; }
+    .bg-upload-btn {
+      display: inline-flex; align-items: center; gap: 7px; background: rgba(120,150,100,0.12);
+      border: 1px solid rgba(100,130,70,0.25); padding: 10px 18px; border-radius: 30px;
+      cursor: pointer; font-size: 0.82rem; color: var(--text-secondary); letter-spacing: 0.04em;
+      transition: all 0.3s ease; font-family: inherit;
+    }
+    .bg-upload-btn:active { background: rgba(120,150,100,0.2); transform: scale(0.96); }
+    .bg-reset-btn {
+      display: inline-flex; align-items: center; gap: 4px; background: transparent; border: none;
+      padding: 8px 12px; cursor: pointer; font-size: 0.75rem; color: #8a9b70;
+      letter-spacing: 0.04em; font-family: inherit; margin-left: 6px;
+    }
+    .upload-hint { font-size: 0.7rem; color: #a3b38b; margin-top: 4px; }
+    #bgFileInput { display: none; }
+
+    /* 详情页 */
+    .detail-page { min-height: 100vh; min-height: 100dvh; position: relative; }
+    .detail-top-atmosphere {
+      width: 100%; height: 25vh; min-height: 150px; max-height: 200px; position: relative;
+      overflow: hidden; border-radius: 0 0 32px 32px; flex-shrink: 0;
+    }
+    .detail-content-area { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 20px 24px; position: relative; z-index: 2; }
+    .detail-back-btn {
+      position: absolute; top: 16px; left: 16px; z-index: 10; width: 42px; height: 42px;
+      border-radius: 50%; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);
+      border: 1px solid rgba(150,170,120,0.3); cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-size: 1.2rem; color: var(--text-primary);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06); text-decoration: none;
+    }
+    .detail-back-btn:active { transform: scale(0.9); }
+
+    .quote-carousel {
+      width: 100%; max-width: 360px; display: flex; align-items: center; justify-content: center;
+      position: relative; background: rgba(255,255,250,0.6); backdrop-filter: blur(12px);
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(160,180,130,0.25); padding: 24px 20px;
+      margin-top: -16px; overflow-y: auto; overflow-x: hidden;
+      min-height: 140px; max-height: 45vh;
+    }
+    .quote-text {
+      font-size: 1.05rem; font-weight: 500; color: var(--text-primary);
+      text-align: center; letter-spacing: 0.06em; line-height: 1.9;
+      position: absolute; width: 85%; opacity: 0; transform: translateY(16px);
+      pointer-events: none; padding: 8px 4px;
+    }
+    .quote-text.active {
+      opacity: 1; transform: translateY(0); animation: textFadeSlide 7.5s ease-in-out forwards;
+      pointer-events: auto; position: relative;
+    }
+    @keyframes textFadeSlide {
+      0% { opacity: 0; transform: translateY(16px); }
+      15% { opacity: 1; transform: translateY(0); }
+      75% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-12px); }
+    }
+    .quote-indicators { display: flex; gap: 8px; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
+    .quote-dot {
+      width: 9px; height: 9px; border-radius: 50%; background: #c5d0b5; transition: all 0.4s; cursor: pointer;
+    }
+    .quote-dot.active { background: var(--gold); width: 26px; border-radius: 12px; box-shadow: 0 2px 8px rgba(160,120,40,0.3); }
+    .quote-nav-hint { font-size: 0.7rem; color: #9aaa83; margin-top: 8px; }
+
+    .atmosphere-serenity {
+      background: linear-gradient(180deg, #cde0c9 0%, #e2f0dd 30%, #eff7ec 60%, #f7faf5 100%);
+      position: relative;
+    }
+    .atmosphere-wealth {
+      background: linear-gradient(180deg, #f7f2dd 0%, #fdf6e5 25%, #fef9f0 50%, #fefcf7 100%);
+      position: relative;
+    }
+    .serenity-icon-top, .wealth-icon-top {
+      position: absolute; bottom: 16px; right: 20px; font-size: 2.8rem; opacity: 0.45; z-index: 3; pointer-events: none;
+    }
+
+    /* 管理按钮 */
+    .manage-bar {
+      width: 100%; max-width: 360px; display: flex; justify-content: center; margin-top: 12px;
+    }
+    .manage-btn {
+      background: rgba(120,150,100,0.15); border: 1px solid rgba(100,130,80,0.3); padding: 8px 20px;
+      border-radius: 24px; font-size: 0.8rem; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.3s; letter-spacing: 0.04em;
+    }
+    .manage-btn:active { background: rgba(120,150,100,0.25); transform: scale(0.96); }
+
+    /* 模态窗口 */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(30,40,20,0.4);
+      z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #fbfdf9; border-radius: 24px; width: 90%; max-width: 380px; max-height: 75vh;
+      display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(20,40,10,0.25);
+      overflow: hidden; animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-header {
+      padding: 18px 20px; border-bottom: 1px solid #e3ecda; display: flex;
+      justify-content: space-between; align-items: center; font-weight: 700;
+      color: var(--text-primary); letter-spacing: 0.04em;
+    }
+    .modal-close {
+      background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #7b8b62;
+    }
+    .modal-body { flex: 1; overflow-y: auto; padding: 12px 16px; }
+    .quote-item {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      background: #f4f9ef; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+      border-left: 4px solid var(--serene-green);
+    }
+    .quote-item-text { flex: 1; font-size: 0.9rem; color: var(--text-primary); line-height: 1.6; word-break: break-word; }
+    .quote-item-del {
+      background: none; border: none; color: #c47a6a; font-size: 1.2rem; cursor: pointer;
+      padding: 4px 8px; margin-left: 8px;
+    }
+    .add-area { display: flex; gap: 8px; margin-top: 12px; padding: 0 4px 12px; }
+    .add-input {
+      flex: 1; border: 1px solid #cddbbc; border-radius: 16px; padding: 10px 14px;
+      font-size: 0.85rem; background: #fff; font-family: inherit; outline: none;
+    }
+    .add-btn {
+      background: var(--serene-green); color: #fff; border: none; border-radius: 16px;
+      padding: 10px 18px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+
+    @media (max-width: 380px) {
+      .home-header .title { font-size: 1.7rem; }
+      .quote-text { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container" id="appContainer">
+  <div class="default-gradient-bg" id="defaultGradientBg"></div>
+  <div class="bg-image-layer" id="bgImageLayer"></div>
+
+  <!-- 漂浮树叶、花、花瓣 -->
+  <div class="floating-decorations">
+    <span class="deco leaf1">🌿</span>
+    <span class="deco leaf2">🍃</span>
+    <span class="deco flower1">🌸</span>
+    <span class="deco flower2">🌼</span>
+    <span class="deco petal1">🍂</span>
+    <span class="deco petal2">💮</span>
+    <span class="deco petal3">🌱</span>
+    <span class="deco branch">🌾</span>
+  </div>
+
+  <div class="content-layer">
+    <!-- 主页 -->
+    <div class="page active" id="homePage">
+      <div class="home-header">
+        <p class="welcome-text">🌱 每日陪伴</p>
+        <h1 class="title">今天也要<br><span class="accent">好好照顾自己</span></h1>
+      </div>
+      <div class="cards-wrapper">
+        <div class="card-entry card-serenity" onclick="openDetail('serenity')">
+          <span class="card-icon">🍃</span>
+          <span class="card-label">心平气和</span>
+          <span class="card-subtitle">静心 · 从容 · 自在</span>
+        </div>
+        <div class="card-entry card-wealth" onclick="openDetail('wealth')">
+          <span class="card-icon">✨</span>
+          <span class="card-label">日进斗金</span>
+          <span class="card-subtitle">丰盛 · 进取 · 收获</span>
+        </div>
+      </div>
+      <div class="bg-upload-area">
+        <label class="bg-upload-btn" for="bgFileInput">🖼️ 更换背景</label>
+        <input type="file" id="bgFileInput" accept="image/*" onchange="handleBgUpload(event)">
+        <button class="bg-reset-btn" onclick="resetBackground()">↺ 恢复默认</button>
+        <p class="upload-hint">上传喜欢的图片作为背景</p>
+      </div>
+    </div>
+
+    <!-- 心平气和页 -->
+    <div class="page detail-page" id="serenityPage">
+      <a class="detail-back-btn" onclick="goHome()">←</a>
+      <div class="detail-top-atmosphere atmosphere-serenity">
+        <span class="serenity-icon-top">🍃</span>
+      </div>
+      <div class="detail-content-area">
+        <div class="quote-carousel" id="serenityCarousel"></div>
+        <div class="quote-indicators" id="serenityIndicators"></div>
+        <div class="manage-bar">
+          <button class="manage-btn" onclick="openManageModal('serenity')">✎ 管理心语</button>
+        </div>
+        <p class="quote-nav-hint">左右滑动或等待自动切换</p>
+      </div>
+    </div>
+
+    <!-- 日进斗金页 -->
+    <div class="page detail-page" id="wealthPage">
+      <a class="detail-back-btn" onclick="goHome()">←</a>
+      <div class="detail-top-atmosphere atmosphere-wealth">
+        <span class="wealth-icon-top">💰</span>
+      </div>
+      <div class="detail-content-area">
+        <div class="quote-carousel" id="wealthCarousel"></div>
+        <div class="quote-indicators" id="wealthIndicators"></div>
+        <div class="manage-bar">
+          <button class="manage-btn" onclick="openManageModal('wealth')">✎ 管理金句</button>
+        </div>
+        <p class="quote-nav-hint">左右滑动或等待自动切换</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 管理模态窗口 -->
+<div class="modal-overlay" id="manageModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modalTitle">管理语录</span>
+      <button class="modal-close" onclick="closeManageModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="add-area">
+      <input class="add-input" id="newQuoteInput" placeholder="输入新语录，换行会自动转成<br>" />
+      <button class="add-btn" id="addQuoteBtn">添加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // 默认语录库
+    const defaultQuotes = {
+      serenity: [
+        "静坐常思己过<br>闲谈莫论人非",
+        "心若冰清<br>天塌不惊",
+        "万事随缘<br>心无增减",
+        "你若盛开<br>清风自来",
+        "一念放下<br>万般自在",
+        "世界很大<br>从容面对",
+        "不急不躁<br>岁月静好",
+        "内心安宁<br>便是晴天",
+        "怪别人是最廉价的正义感<br>不需要行动<br>不需要勇气<br>不需要改变<br>只需要一张嘴<br>和一颗脆弱的玻璃心",
+        "你最大的问题<br>是把被回应等同于我存在<br>你需要建立的那个东西<br>叫自我在场<br>就是不管外面有没有人看你<br>回你懂你赞你<br>你都在这里<br>稳稳地在这里"
+      ],
+      wealth: [
+        "今天也是<br>财运满满的一天",
+        "努力的人<br>运气不会太差",
+        "机会永远留给<br>有准备的人",
+        "每一步都算数<br>每一天都在进步",
+        "财富是认知的变现<br>持续成长",
+        "坚持做对的事<br>时间会给你答案",
+        "今天的付出<br>是明天的收获",
+        "日拱一卒<br>功不唐捐",
+        "努力的意义<br>不是让你成为那20%<br>而是让你不用看那80%的脸色"
+      ]
+    };
+
+    function getQuotes(type) {
+      const key = `custom_${type}_quotes`;
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const arr = JSON.parse(stored);
+          if (Array.isArray(arr) && arr.length > 0) return arr;
+        }
+      } catch (e) {}
+      return defaultQuotes[type] ? [...defaultQuotes[type]] : [];
+    }
+
+    function saveQuotes(type, arr) {
+      const key = `custom_${type}_quotes`;
+      localStorage.setItem(key, JSON.stringify(arr));
+    }
+
+    // DOM
+    const appContainer = document.getElementById('appContainer');
+    const defaultGradientBg = document.getElementById('defaultGradientBg');
+    const bgImageLayer = document.getElementById('bgImageLayer');
+    const homePage = document.getElementById('homePage');
+    const serenityPage = document.getElementById('serenityPage');
+    const wealthPage = document.getElementById('wealthPage');
+    const bgResetBtn = document.getElementById('bgResetBtn');
+    const serenityCarousel = document.getElementById('serenityCarousel');
+    const wealthCarousel = document.getElementById('wealthCarousel');
+    const serenityIndicators = document.getElementById('serenityIndicators');
+    const wealthIndicators = document.getElementById('wealthIndicators');
+    const manageModal = document.getElementById('manageModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const newQuoteInput = document.getElementById('newQuoteInput');
+    const addQuoteBtn = document.getElementById('addQuoteBtn');
+
+    let serenityTimer = null, wealthTimer = null;
+    let serenityCurrentIndex = 0, wealthCurrentIndex = 0;
+    const AUTO_SWITCH_INTERVAL = 7500;
+    let currentManageType = null;
+
+    // 轮播元素引用（动态更新）
+    let serenityQuotesEls = [];
+    let wealthQuotesEls = [];
+
+    function renderCarousel(type) {
+      const carousel = type === 'serenity' ? serenityCarousel : wealthCarousel;
+      const quotes = getQuotes(type);
+      carousel.innerHTML = '';
+      quotes.forEach((text, i) => {
+        const span = document.createElement('span');
+        span.className = 'quote-text';
+        if (i === 0) span.classList.add('active');
+        span.setAttribute('data-index', i);
+        span.innerHTML = text; // 保留<br>
+        carousel.appendChild(span);
+      });
+      if (type === 'serenity') {
+        serenityQuotesEls = carousel.querySelectorAll('.quote-text');
+        serenityCurrentIndex = 0;
+        buildIndicators(serenityIndicators, quotes.length, 0);
+        if (quotes.length > 0) showQuote(serenityCarousel, serenityQuotesEls, 0);
+      } else {
+        wealthQuotesEls = carousel.querySelectorAll('.quote-text');
+        wealthCurrentIndex = 0;
+        buildIndicators(wealthIndicators, quotes.length, 0);
+        if (quotes.length > 0) showQuote(wealthCarousel, wealthQuotesEls, 0);
+      }
+    }
+
+    function showQuote(carousel, quotes, index) {
+      if (!carousel || !quotes || quotes.length === 0) return;
+      quotes.forEach(q => { q.classList.remove('active'); q.style.animation = 'none'; q.offsetHeight; q.style.animation = ''; });
+      if (quotes[index]) {
+        quotes[index].classList.add('active');
+      }
+      carousel.scrollTop = 0;
+    }
+
+    function buildIndicators(container, count, activeIndex) {
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'quote-dot';
+        if (i === activeIndex) dot.classList.add('active');
+        dot.addEventListener('click', () => {
+          const type = container === serenityIndicators ? 'serenity' : 'wealth';
+          const carousel = type === 'serenity' ? serenityCarousel : wealthCarousel;
+          const quotes = type === 'serenity' ? serenityQuotesEls : wealthQuotesEls;
+          showQuote(carousel, quotes, i);
+          if (type === 'serenity') { serenityCurrentIndex = i; restartSerenityTimer(); }
+          else { wealthCurrentIndex = i; restartWealthTimer(); }
+        });
+        container.appendChild(dot);
+      }
+    }
+
+    function nextQuote(type) {
+      const carousel = type === 'serenity' ? serenityCarousel : wealthCarousel;
+      const quotes = type === 'serenity' ? serenityQuotesEls : wealthQuotesEls;
+      const currentIndex = type === 'serenity' ? serenityCurrentIndex : wealthCurrentIndex;
+      if (!quotes || quotes.length === 0) return;
+      const next = (currentIndex + 1) % quotes.length;
+      showQuote(carousel, quotes, next);
+      if (type === 'serenity') {
+        serenityCurrentIndex = next;
+        buildIndicators(serenityIndicators, quotes.length, next);
+      } else {
+        wealthCurrentIndex = next;
+        buildIndicators(wealthIndicators, quotes.length, next);
+      }
+    }
+
+    function startSerenityAutoSwitch() {
+      stopSerenityTimer();
+      serenityTimer = setInterval(() => nextQuote('serenity'), AUTO_SWITCH_INTERVAL);
+    }
+    function startWealthAutoSwitch() {
+      stopWealthTimer();
+      wealthTimer = setInterval(() => nextQuote('wealth'), AUTO_SWITCH_INTERVAL);
+    }
+    function stopSerenityTimer() { if (serenityTimer) { clearInterval(serenityTimer); serenityTimer = null; } }
+    function stopWealthTimer() { if (wealthTimer) { clearInterval(wealthTimer); wealthTimer = null; } }
+    function restartSerenityTimer() { stopSerenityTimer(); startSerenityAutoSwitch(); }
+    function restartWealthTimer() { stopWealthTimer(); startWealthAutoSwitch(); }
+
+    // 页面导航
+    function openDetail(type) {
+      homePage.classList.remove('active');
+      if (type === 'serenity') {
+        serenityPage.classList.add('active');
+        renderCarousel('serenity');
+        startSerenityAutoSwitch();
+      } else {
+        wealthPage.classList.add('active');
+        renderCarousel('wealth');
+        startWealthAutoSwitch();
+      }
+    }
+
+    function goHome() {
+      stopAllTimers();
+      serenityPage.classList.remove('active');
+      wealthPage.classList.remove('active');
+      homePage.classList.add('active');
+    }
+    function stopAllTimers() { stopSerenityTimer(); stopWealthTimer(); }
+
+    // 管理模态窗口
+    function openManageModal(type) {
+      currentManageType = type;
+      const quotes = getQuotes(type);
+      modalTitle.textContent = type === 'serenity' ? '管理 · 心平气和' : '管理 · 日进斗金';
+      let html = '';
+      quotes.forEach((q, i) => {
+        html += `<div class="quote-item">
+                  <span class="quote-item-text">${q.replace(/\n/g, '<br>')}</span>
+                  <button class="quote-item-del" data-index="${i}">✕</button>
+                </div>`;
+      });
+      if (quotes.length === 0) html = '<p style="text-align:center;color:#999;">还没有语录，添加一条吧～</p>';
+      modalBody.innerHTML = html;
+      newQuoteInput.value = '';
+      manageModal.classList.add('show');
+
+      // 删除事件绑定
+      modalBody.querySelectorAll('.quote-item-del').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const index = parseInt(this.dataset.index);
+          deleteQuote(type, index);
+        });
+      });
+    }
+
+    function closeManageModal() {
+      manageModal.classList.remove('show');
+      currentManageType = null;
+    }
+
+    function deleteQuote(type, index) {
+      const quotes = getQuotes(type);
+      quotes.splice(index, 1);
+      saveQuotes(type, quotes);
+      renderCarousel(type);
+      if (type === 'serenity') restartSerenityTimer(); else restartWealthTimer();
+      openManageModal(type); // 刷新模态窗口
+    }
+
+    function addQuote(type, text) {
+      if (!text.trim()) return;
+      const formatted = text.replace(/\n/g, '<br>');
+      const quotes = getQuotes(type);
+      quotes.push(formatted);
+      saveQuotes(type, quotes);
+      renderCarousel(type);
+      if (type === 'serenity') restartSerenityTimer(); else restartWealthTimer();
+      openManageModal(type);
+    }
+
+    addQuoteBtn.addEventListener('click', () => {
+      if (currentManageType) addQuote(currentManageType, newQuoteInput.value);
+    });
+    newQuoteInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && currentManageType) {
+        addQuote(currentManageType, newQuoteInput.value);
+      }
+    });
+
+    manageModal.addEventListener('click', function(e) {
+      if (e.target === manageModal) closeManageModal();
+    });
+
+    // 触摸滑动
+    let touchStartX = 0, touchEndX = 0;
+    function handleTouchStart(e) { touchStartX = e.changedTouches[0].screenX; }
+    function handleTouchEnd(e) {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 40) {
+        if (serenityPage.classList.contains('active')) {
+          if (diff < 0) nextQuote('serenity');
+          else {
+            const prev = (serenityCurrentIndex - 1 + serenityQuotesEls.length) % serenityQuotesEls.length;
+            showQuote(serenityCarousel, serenityQuotesEls, prev);
+            buildIndicators(serenityIndicators, serenityQuotesEls.length, prev);
+            serenityCurrentIndex = prev;
+          }
+          restartSerenityTimer();
+        } else if (wealthPage.classList.contains('active')) {
+          if (diff < 0) nextQuote('wealth');
+          else {
+            const prev = (wealthCurrentIndex - 1 + wealthQuotesEls.length) % wealthQuotesEls.length;
+            showQuote(wealthCarousel, wealthQuotesEls, prev);
+            buildIndicators(wealthIndicators, wealthQuotesEls.length, prev);
+            wealthCurrentIndex = prev;
+          }
+          restartWealthTimer();
+        }
+      }
+    }
+    serenityCarousel.addEventListener('touchstart', handleTouchStart, {passive: true});
+    serenityCarousel.addEventListener('touchend', handleTouchEnd, {passive: true});
+    wealthCarousel.addEventListener('touchstart', handleTouchStart, {passive: true});
+    wealthCarousel.addEventListener('touchend', handleTouchEnd, {passive: true});
+
+    // 背景上传
+    function loadCustomBackground() {
+      try {
+        const savedBg = localStorage.getItem('customHomeBg');
+        if (savedBg) {
+          bgImageLayer.style.backgroundImage = `url(${savedBg})`;
+          bgImageLayer.classList.add('active');
+          defaultGradientBg.classList.add('hidden');
+          appContainer.classList.add('custom-bg');
+          bgResetBtn.style.display = 'inline-flex';
+        } else {
+          bgImageLayer.classList.remove('active'); bgImageLayer.style.backgroundImage = '';
+          defaultGradientBg.classList.remove('hidden'); appContainer.classList.remove('custom-bg');
+          bgResetBtn.style.display = 'none';
+        }
+      } catch (e) { bgResetBtn.style.display = 'none'; }
+    }
+
+    function handleBgUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          const maxW = 1200, maxH = 2000;
+          if (w > maxW || h > maxH) { const r = Math.min(maxW/w, maxH/h); w *= r; h *= r; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          try {
+            localStorage.setItem('customHomeBg', canvas.toDataURL('image/jpeg',0.7));
+            loadCustomBackground();
+          } catch (e) { alert('图片太大，请压缩后重试～'); }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function resetBackground() {
+      localStorage.removeItem('customHomeBg');
+      loadCustomBackground();
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopAllTimers();
+      else {
+        if (serenityPage.classList.contains('active')) startSerenityAutoSwitch();
+        else if (wealthPage.classList.contains('active')) startWealthAutoSwitch();
+      }
+    });
+
+    window.openDetail = openDetail;
+    window.goHome = goHome;
+    window.handleBgUpload = handleBgUpload;
+    window.resetBackground = resetBackground;
+    window.openManageModal = openManageModal;
+    window.closeManageModal = closeManageModal;
+
+    loadCustomBackground();
+  })();
+</script>
+</body>
+</html>
