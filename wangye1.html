@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>每日激励 - AI小助手</title>
+    <style>
+        :root {
+            --gold: #c8963e;
+            --gold-light: #e8c97a;
+            --gold-dark: #8b5e2b;
+            --warm-bg: #fdf6ec;
+            --card-bg: rgba(255, 248, 240, 0.75);
+            --text-primary: #3d2e1c;
+            --text-secondary: #6b5640;
+            --serene-green: #7a9e7e;
+            --serene-light: #c5dac8;
+            --serene-bg: #eef5ef;
+            --shadow-soft: 0 4px 20px rgba(80, 50, 20, 0.10);
+            --shadow-card: 0 8px 32px rgba(60, 30, 10, 0.12);
+            --shadow-gold: 0 6px 24px rgba(180, 120, 40, 0.18);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --transition-smooth: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Serif SC', 'Source Han Serif CN', 'STSong', 'Songti SC', '华文宋体', 'Georgia', serif;
+            background: #fdf6ec;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
+            position: relative;
+        }
+
+        /* ========== 主页面容器 ========== */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            min-height: 100dvh;
+            position: relative;
+            overflow: hidden;
+            background: var(--warm-bg);
+            transition: background 1s ease;
+        }
+
+        /* 自定义背景图时使用 */
+        .app-container.custom-bg {
+            background: var(--warm-bg);
+        }
+        .app-container.custom-bg .bg-image-layer {
+            opacity: 1;
+        }
+
+        /* 背景图层 */
+        .bg-image-layer {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            height: 100dvh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .bg-image-layer.active {
+            opacity: 1;
+        }
+        .bg-image-layer::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(253, 246, 236, 0.55);
+            z-index: 1;
+        }
+
+        /* 默认渐变背景（无自定义图时显示） */
+        .default-gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            height: 100dvh;
+            background:
+                radial-gradient(ellipse at 20% 20%, #fef3d8 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, #fde8d0 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, #fff8ed 0%, #fdf3e4 100%);
+            z-index: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+        .default-gradient-bg.hidden {
+            opacity: 0;
+        }
+
+        /* 内容层 */
+        .content-layer {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 20px 30px;
+        }
+
+        /* ========== 页面切换动画 ========== */
+        .page {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            animation: pageFadeIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        .page.active {
+            display: flex;
+        }
+
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes gentleFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        @keyframes shimmer {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.55;
+            }
+        }
+
+        @keyframes mistDrift {
+            0% {
+                transform: translateX(-10%) translateY(0);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translateX(5%) translateY(-8px);
+                opacity: 0.75;
+            }
+            100% {
+                transform: translateX(-10%) translateY(0);
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes particleFloat {
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 0.6;
+            }
+            25% {
+                transform: translateY(-20px) scale(1.4);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-6px) scale(0.9);
+                opacity: 0.5;
+            }
+            75% {
+                transform: translateY(-28px) scale(1.3);
+                opacity: 0.85;
+            }
+        }
+
+        @keyframes textFadeSlide {
+            0% {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            15% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            75% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+        }
+
+        /* ========== 主页样式 ========== */
+        .home-header {
+            text-align: center;
+            padding-top: 10vh;
+            padding-bottom: 20px;
+        }
+        .home-header .welcome-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+            font-weight: 400;
+        }
+        .home-header .title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.04em;
+            line-height: 1.3;
+        }
+        .home-header .title .accent {
+            color: var(--gold);
+            position: relative;
+        }
+
+        .cards-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            justify-content: center;
+            padding: 10px 4px;
+            max-width: 380px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .card-entry {
+            display: block;
+            width: 100%;
+            padding: 28px 26px 26px;
+            border-radius: var(--radius-lg);
+            border: 1.5px solid rgba(180, 140, 100, 0.2);
+            cursor: pointer;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-smooth);
+            -webkit-tap-highlight-color: transparent;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--shadow-card);
+            animation: gentleFloat 5s ease-in-out infinite;
+        }
+        .card-entry:nth-child(2) {
+            animation-delay: 1.2s;
+        }
+        .card-entry:active {
+            transform: scale(0.97);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.15s ease;
+        }
+        .card-entry::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -20%;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            opacity: 0.14;
+            transition: all var(--transition-smooth);
+            pointer-events: none;
+        }
+        .card-entry.card-serenity::before {
+            background: var(--serene-green);
+        }
+        .card-entry.card-wealth::before {
+            background: var(--gold);
+        }
+        .card-entry .card-icon {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+        .card-entry .card-label {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+            position: relative;
+            z-index: 1;
+        }
+        .card-entry .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            letter-spacing: 0.04em;
+            position: relative;
+            z-index: 1;
+            font-weight: 400;
+        }
+        .card-entry.card-serenity {
+            border-left: 4px solid var(--serene-green);
+        }
+        .card-entry.card-wealth {
+            border-left: 4px solid var(--gold);
+        }
+
+        /* 上传背景按钮 */
+        .bg-upload-area {
+            text-align: center;
+            padding: 16px 0 8px;
+            position: relative;
+            z-index: 3;
+        }
+        .bg-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(180, 140, 100, 0.1);
+            border: 1px solid rgba(160, 120, 70, 0.25);
+            padding: 10px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.04em;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            font-family: inherit;
+        }
+        .bg-upload-btn:active {
+            background: rgba(180, 140, 100, 0.2);
+            transform: scale(0.96);
+        }
+        .bg-upload-btn .icon-camera {
+            font-size: 1.1rem;
+        }
+        .bg-reset-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: #b0a090;
+            letter-spacing: 0.04em;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            font-family: inherit;
+            margin-left: 6px;
+        }
+        .bg-reset-btn:active {
+            color: #8b6f4e;
+        }
+        .upload-hint {
+            font-size: 0.7rem;
+            color: #c5b8a5;
+            margin-top: 4px;
+            letter-spacing: 0.03em;
+        }
+        #bgFileInput {
+            display: none;
+        }
+
+        /* ========== 详情页通用样式 ========== */
+        .detail-page {
+            min-height: 100vh;
+            min-height: 100dvh;
+            position: relative;
+        }
+        .detail-top-atmosphere {
+            width: 100%;
+            height: 30vh;
+            min-height: 200px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 32px 32px;
+            flex-shrink: 0;
+        }
+        .detail-content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 20px 30px;
+            position: relative;
+            z-index: 2;
+        }
+        .detail-back-btn {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(180, 150, 120, 0.25);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            text-decoration: none;
+        }
+        .detail-back-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 语录轮播区 */
+        .quote-carousel {
+            width: 100%;
+            max-width: 360px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(200, 170, 130, 0.2);
+            padding: 30px 24px;
+            margin-top: -20px;
+            overflow: hidden;
+            min-height: 200px;
+        }
+        .quote-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-align: center;
+            letter-spacing: 0.06em;
+            line-height: 1.7;
+            position: absolute;
+            width: 80%;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: none;
+            pointer-events: none;
+        }
+        .quote-text.active {
+            opacity: 1;
+            transform: translateY(0);
+            animation: textFadeSlide 4.5s ease-in-out forwards;
+            pointer-events: auto;
+        }
+        .quote-indicators {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .quote-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #d5c8b2;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .quote-dot.active {
+            background: var(--gold);
+            width: 26px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(180, 120, 40, 0.3);
+        }
+        .quote-nav-hint {
+            font-size: 0.7rem;
+            color: #c5b8a5;
+            margin-top: 10px;
+            letter-spacing: 0.03em;
+        }
+
+        /* ========== 心平气和页专属 ========== */
+        .atmosphere-serenity {
+            background: linear-gradient(180deg, #d4e5d6 0%, #e8f1e9 30%, #f5f9f5 60%, #fafcfa 100%);
+            position: relative;
+        }
+        .atmosphere-serenity .mist-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .atmosphere-serenity .mist-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.55);
+            filter: blur(40px);
+            animation: mistDrift 8s ease-in-out infinite;
+        }
+        .atmosphere-serenity .mist-circle:nth-child(1) {
+            width: 160px;
+            height: 100px;
+            top: 30%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        .atmosphere-serenity .mist-circle:nth-child(2) {
+            width: 200px;
+            height: 120px;
+            top: 15%;
+            right: 5%;
+            animation-delay: 3s;
+            animation-duration: 10s;
+        }
+        .atmosphere-serenity .mist-circle:nth-child(3) {
+            width: 140px;
+            height: 80px;
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 5s;
+            animation-duration: 7s;
+        }
+        .atmosphere-serenity .mist-circle:nth-child(4) {
+            width: 100px;
+            height: 60px;
+            top: 55%;
+            right: 25%;
+            animation-delay: 2s;
+            animation-duration: 9s;
+        }
+        .serenity-icon-top {
+            position: absolute;
+            bottom: 20px;
+            right: 24px;
+            font-size: 3.5rem;
+            opacity: 0.5;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* ========== 日进斗金页专属 ========== */
+        .atmosphere-wealth {
+            background: linear-gradient(180deg, #fdf0d5 0%, #fef7e8 25%, #fef9f0 50%, #fefcf7 100%);
+            position: relative;
+        }
+        .atmosphere-wealth .sparkle-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .atmosphere-wealth .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--gold-light);
+            border-radius: 50%;
+            box-shadow: 0 0 12px 3px rgba(220, 180, 90, 0.6);
+            animation: particleFloat 4s ease-in-out infinite;
+        }
+        .atmosphere-wealth .sparkle:nth-child(1) {
+            top: 20%;
+            left: 15%;
+            animation-delay: 0s;
+            width: 5px;
+            height: 5px;
+        }
+        .atmosphere-wealth .sparkle:nth-child(2) {
+            top: 35%;
+            right: 20%;
+            animation-delay: 0.8s;
+            width: 7px;
+            height: 7px;
+        }
+        .atmosphere-wealth .sparkle:nth-child(3) {
+            top: 55%;
+            left: 22%;
+            animation-delay: 1.6s;
+            width: 4px;
+            height: 4px;
+        }
+        .atmosphere-wealth .sparkle:nth-child(4) {
+            top: 18%;
+            left: 55%;
+            animation-delay: 2.4s;
+            width: 6px;
+            height: 6px;
+        }
+        .atmosphere-wealth .sparkle:nth-child(5) {
+            top: 60%;
+            right: 30%;
+            animation-delay: 3s;
+            width: 5px;
+            height: 5px;
+        }
+        .atmosphere-wealth .sparkle:nth-child(6) {
+            top: 40%;
+            left: 40%;
+            animation-delay: 3.6s;
+            width: 8px;
+            height: 8px;
+        }
+        .atmosphere-wealth .sparkle:nth-child(7) {
+            top: 25%;
+            right: 40%;
+            animation-delay: 1.2s;
+            width: 4px;
+            height: 4px;
+        }
+        .atmosphere-wealth .sparkle:nth-child(8) {
+            top: 70%;
+            left: 60%;
+            animation-delay: 2s;
+            width: 6px;
+            height: 6px;
+        }
+        .wealth-icon-top {
+            position: absolute;
+            bottom: 20px;
+            right: 24px;
+            font-size: 3.5rem;
+            opacity: 0.45;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* 金色光晕 */
+        .atmosphere-wealth::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 140px;
+            background: radial-gradient(ellipse, rgba(240, 200, 120, 0.35) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        /* ========== 响应式微调 ========== */
+        @media (max-width: 380px) {
+            .home-header .title {
+                font-size: 1.7rem;
+            }
+            .card-entry {
+                padding: 22px 18px 20px;
+            }
+            .card-entry .card-label {
+                font-size: 1.2rem;
+            }
+            .quote-text {
+                font-size: 1.05rem;
+            }
+            .detail-top-atmosphere {
+                height: 24vh;
+                min-height: 160px;
+            }
+        }
+        @media (min-width: 420px) {
+            .home-header {
+                padding-top: 12vh;
+            }
+            .quote-carousel {
+                min-height: 220px;
+            }
+            .quote-text {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appContainer">
+        <!-- 默认渐变背景 -->
+        <div class="default-gradient-bg" id="defaultGradientBg"></div>
+        <!-- 自定义背景图层 -->
+        <div class="bg-image-layer" id="bgImageLayer"></div>
+
+        <!-- 内容层 -->
+        <div class="content-layer">
+
+            <!-- ==================== 主页 ==================== -->
+            <div class="page active" id="homePage">
+                <div class="home-header">
+                    <p class="welcome-text">✨ 每日陪伴</p>
+                    <h1 class="title">今天也要<br><span class="accent">好好照顾自己</span></h1>
+                </div>
+                <div class="cards-wrapper">
+                    <!-- 心平气和卡片 -->
+                    <div class="card-entry card-serenity" id="cardSerenity" onclick="openDetail('serenity')">
+                        <span class="card-icon">🍃</span>
+                        <span class="card-label">心平气和</span>
+                        <span class="card-subtitle">静心 · 从容 · 自在</span>
+                    </div>
+                    <!-- 日进斗金卡片 -->
+                    <div class="card-entry card-wealth" id="cardWealth" onclick="openDetail('wealth')">
+                        <span class="card-icon">✨</span>
+                        <span class="card-label">日进斗金</span>
+                        <span class="card-subtitle">丰盛 · 进取 · 收获</span>
+                    </div>
+                </div>
+                <!-- 背景上传区 -->
+                <div class="bg-upload-area">
+                    <label class="bg-upload-btn" for="bgFileInput" id="bgUploadLabel">
+                        <span class="icon-camera">🖼️</span> 更换背景
+                    </label>
+                    <input type="file" id="bgFileInput" accept="image/*" onchange="handleBgUpload(event)">
+                    <button class="bg-reset-btn" id="bgResetBtn" onclick="resetBackground()" title="恢复默认背景">
+                        ↺ 恢复默认
+                    </button>
+                    <p class="upload-hint">上传喜欢的图片作为主页背景</p>
+                </div>
+            </div>
+
+            <!-- ==================== 心平气和详情页 ==================== -->
+            <div class="page detail-page" id="serenityPage">
+                <a class="detail-back-btn" onclick="goHome()" title="返回">←</a>
+                <div class="detail-top-atmosphere atmosphere-serenity">
+                    <div class="mist-layer">
+                        <div class="mist-circle"></div>
+                        <div class="mist-circle"></div>
+                        <div class="mist-circle"></div>
+                        <div class="mist-circle"></div>
+                    </div>
+                    <span class="serenity-icon-top">🍃</span>
+                </div>
+                <div class="detail-content-area">
+                    <div class="quote-carousel" id="serenityCarousel">
+                        <span class="quote-text active" data-index="0">静坐常思己过<br>闲谈莫论人非</span>
+                        <span class="quote-text" data-index="1">心若冰清<br>天塌不惊</span>
+                        <span class="quote-text" data-index="2">万事随缘<br>心无增减</span>
+                        <span class="quote-text" data-index="3">你若盛开<br>清风自来</span>
+                        <span class="quote-text" data-index="4">一念放下<br>万般自在</span>
+                        <span class="quote-text" data-index="5">世界很大<br>从容面对</span>
+                        <span class="quote-text" data-index="6">不急不躁<br>岁月静好</span>
+                        <span class="quote-text" data-index="7">内心安宁<br>便是晴天</span>
+			   <span class="quote-text" data-index="8">怪别人是最廉价的正义感，不需要行动<br>不需要勇气<br>不需要改变<br>只需要一张嘴和一颗脆弱的玻璃心</span>
+			  <span class="quote-text" data-index="7">你最大的问题：你把被回应等同于我存在<br>你需要建立的那个东西<br>叫自我在场<br>就是不管外面有没有人看你<br>回你<懂你>赞你<br>你都在这里<br>稳稳地在这里</span>
+                    </div>
+                    <div class="quote-indicators" id="serenityIndicators"></div>
+                    <p class="quote-nav-hint">左右滑动或等待自动切换</p>
+                </div>
+            </div>
+
+            <!-- ==================== 日进斗金详情页 ==================== -->
+            <div class="page detail-page" id="wealthPage">
+                <a class="detail-back-btn" onclick="goHome()" title="返回">←</a>
+                <div class="detail-top-atmosphere atmosphere-wealth">
+                    <div class="sparkle-container">
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                    </div>
+                    <span class="wealth-icon-top">💰</span>
+                </div>
+                <div class="detail-content-area">
+                    <div class="quote-carousel" id="wealthCarousel">
+                        <span class="quote-text active" data-index="0">今天也是<br>财运满满的一天</span>
+                        <span class="quote-text" data-index="1">努力的人<br>运气不会太差</span>
+                        <span class="quote-text" data-index="2">机会永远留给<br>有准备的人</span>
+                        <span class="quote-text" data-index="3">每一步都算数<br>每一天都在进步</span>
+                        <span class="quote-text" data-index="4">财富是认知的变现<br>持续成长</span>
+                        <span class="quote-text" data-index="5">坚持做对的事<br>时间会给你答案</span>
+                        <span class="quote-text" data-index="6">今天的付出<br>是明天的收获</span>
+                        <span class="quote-text" data-index="7">日拱一卒<br>功不唐捐</span>
+                        <span class="quote-text" data-index="8">努力的意义<br>不是让你成为那20%<br>而是让你不用看那80%的脸色</span>
+
+                    </div>
+                    <div class="quote-indicators" id="wealthIndicators"></div>
+                    <p class="quote-nav-hint">左右滑动或等待自动切换</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============ DOM 引用 ============
+            const appContainer = document.getElementById('appContainer');
+            const defaultGradientBg = document.getElementById('defaultGradientBg');
+            const bgImageLayer = document.getElementById('bgImageLayer');
+            const homePage = document.getElementById('homePage');
+            const serenityPage = document.getElementById('serenityPage');
+            const wealthPage = document.getElementById('wealthPage');
+            const bgResetBtn = document.getElementById('bgResetBtn');
+            const bgFileInput = document.getElementById('bgFileInput');
+
+            // 轮播相关
+            const serenityCarousel = document.getElementById('serenityCarousel');
+            const wealthCarousel = document.getElementById('wealthCarousel');
+            const serenityIndicators = document.getElementById('serenityIndicators');
+            const wealthIndicators = document.getElementById('wealthIndicators');
+
+            let serenityTimer = null;
+            let wealthTimer = null;
+            let serenityCurrentIndex = 0;
+            let wealthCurrentIndex = 0;
+            const serenityQuotes = serenityCarousel ? serenityCarousel.querySelectorAll('.quote-text') : [];
+            const wealthQuotes = wealthCarousel ? wealthCarousel.querySelectorAll('.quote-text') : [];
+            const AUTO_SWITCH_INTERVAL = 4500; // 4.5秒自动切换
+
+            // 触摸滑动相关
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+            const SWIPE_THRESHOLD = 40;
+
+            // ============ 背景图管理 ============
+            function loadCustomBackground() {
+                try {
+                    const savedBg = localStorage.getItem('customHomeBg');
+                    if (savedBg) {
+                        bgImageLayer.style.backgroundImage = `url(${savedBg})`;
+                        bgImageLayer.classList.add('active');
+                        defaultGradientBg.classList.add('hidden');
+                        appContainer.classList.add('custom-bg');
+                        bgResetBtn.style.display = 'inline-flex';
+                    } else {
+                        bgImageLayer.classList.remove('active');
+                        bgImageLayer.style.backgroundImage = '';
+                        defaultGradientBg.classList.remove('hidden');
+                        appContainer.classList.remove('custom-bg');
+                        bgResetBtn.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.warn('读取背景图失败:', e);
+                    bgResetBtn.style.display = 'none';
+                }
+            }
+
+            function handleBgUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                    alert('请上传图片文件哦～');
+                    return;
+                }
+                if (file.size > 8 * 1024 * 1024) {
+                    alert('图片太大啦，请选择8MB以内的图片～');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result;
+                    try {
+                        // 使用canvas压缩大图
+                        const img = new Image();
+                        img.onload = function() {
+                            const maxWidth = 1200;
+                            const maxHeight = 2000;
+                            let w = img.width;
+                            let h = img.height;
+                            if (w > maxWidth || h > maxHeight) {
+                                const ratio = Math.min(maxWidth / w, maxHeight / h);
+                                w = Math.round(w * ratio);
+                                h = Math.round(h * ratio);
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w;
+                            canvas.height = h;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, w, h);
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                            try {
+                                localStorage.setItem('customHomeBg', compressedBase64);
+                                loadCustomBackground();
+                            } catch (storageErr) {
+                                // localStorage满了，尝试不压缩直接存原图
+                                try {
+                                    localStorage.setItem('customHomeBg', base64);
+                                    loadCustomBackground();
+                                } catch (e2) {
+                                    alert('存储空间不足，请使用更小的图片～');
+                                }
+                            }
+                        };
+                        img.src = base64;
+                    } catch (err) {
+                        alert('图片处理失败，请重试～');
+                        console.error(err);
+                    }
+                };
+                reader.readAsDataURL(file);
+                // 清空input以便重复上传同一文件
+                event.target.value = '';
+            }
+
+            function resetBackground() {
+                try {
+                    localStorage.removeItem('customHomeBg');
+                } catch (e) {}
+                bgImageLayer.classList.remove('active');
+                bgImageLayer.style.backgroundImage = '';
+                defaultGradientBg.classList.remove('hidden');
+                appContainer.classList.remove('custom-bg');
+                bgResetBtn.style.display = 'none';
+                bgFileInput.value = '';
+            }
+
+            // ============ 页面导航 ============
+            function openDetail(type) {
+                if (type === 'serenity') {
+                    homePage.classList.remove('active');
+                    serenityPage.classList.add('active');
+                    serenityCurrentIndex = 0;
+                    showQuote(serenityCarousel, serenityQuotes, serenityCurrentIndex);
+                    buildIndicators(serenityIndicators, serenityQuotes.length, serenityCurrentIndex);
+                    startSerenityAutoSwitch();
+                    // 重新触发动画
+                    resetCarouselAnimation(serenityCarousel);
+                } else if (type === 'wealth') {
+                    homePage.classList.remove('active');
+                    wealthPage.classList.add('active');
+                    wealthCurrentIndex = 0;
+                    showQuote(wealthCarousel, wealthQuotes, wealthCurrentIndex);
+                    buildIndicators(wealthIndicators, wealthQuotes.length, wealthCurrentIndex);
+                    startWealthAutoSwitch();
+                    resetCarouselAnimation(wealthCarousel);
+                }
+            }
+
+            function goHome() {
+                stopAllTimers();
+                serenityPage.classList.remove('active');
+                wealthPage.classList.remove('active');
+                homePage.classList.add('active');
+            }
+
+            function stopAllTimers() {
+                if (serenityTimer) {
+                    clearInterval(serenityTimer);
+                    serenityTimer = null;
+                }
+                if (wealthTimer) {
+                    clearInterval(wealthTimer);
+                    wealthTimer = null;
+                }
+            }
+
+            // ============ 轮播逻辑 ============
+            function showQuote(carousel, quotes, index) {
+                if (!carousel || !quotes || quotes.length === 0) return;
+                // 移除所有active
+                quotes.forEach(q => {
+                    q.classList.remove('active');
+                    q.style.animation = 'none';
+                    q.offsetHeight; // 强制回流
+                    q.style.animation = '';
+                });
+                // 设置当前active
+                if (quotes[index]) {
+                    quotes[index].classList.add('active');
+                }
+                // 更新指示器
+                const carouselId = carousel.id;
+                if (carouselId === 'serenityCarousel') {
+                    buildIndicators(serenityIndicators, quotes.length, index);
+                    serenityCurrentIndex = index;
+                } else if (carouselId === 'wealthCarousel') {
+                    buildIndicators(wealthIndicators, quotes.length, index);
+                    wealthCurrentIndex = index;
+                }
+            }
+
+            function resetCarouselAnimation(carousel) {
+                if (!carousel) return;
+                const quotes = carousel.querySelectorAll('.quote-text');
+                quotes.forEach(q => {
+                    q.style.animation = 'none';
+                    q.offsetHeight;
+                    q.style.animation = '';
+                });
+                const activeQuote = carousel.querySelector('.quote-text.active');
+                if (activeQuote) {
+                    activeQuote.style.animation = 'none';
+                    activeQuote.offsetHeight;
+                    activeQuote.style.animation = '';
+                    activeQuote.classList.remove('active');
+                    void activeQuote.offsetWidth;
+                    activeQuote.classList.add('active');
+                }
+            }
+
+            function buildIndicators(container, count, activeIndex) {
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'quote-dot';
+                    if (i === activeIndex) dot.classList.add('active');
+                    dot.addEventListener('click', (function(idx) {
+                        return function() {
+                            const carousel = container.id === 'serenityIndicators' ? serenityCarousel :
+                                wealthCarousel;
+                            const quotes = container.id === 'serenityIndicators' ? serenityQuotes :
+                                wealthQuotes;
+                            showQuote(carousel, quotes, idx);
+                            // 重置自动切换计时
+                            if (container.id === 'serenityIndicators') {
+                                restartSerenityTimer();
+                            } else {
+                                restartWealthTimer();
+                            }
+                        };
+                    })(i));
+                    container.appendChild(dot);
+                }
+            }
+
+            function nextQuote(carousel, quotes, indicators, currentIndexGetter, indexSetter) {
+                if (!carousel || !quotes || quotes.length === 0) return;
+                let current = typeof currentIndexGetter === 'function' ? currentIndexGetter() : (carousel.id ===
+                    'serenityCarousel' ? serenityCurrentIndex : wealthCurrentIndex);
+                const next = (current + 1) % quotes.length;
+                showQuote(carousel, quotes, next);
+                if (indicators) buildIndicators(indicators, quotes.length, next);
+                if (typeof indexSetter === 'function') indexSetter(next);
+            }
+
+            function startSerenityAutoSwitch() {
+                stopSerenityTimer();
+                serenityTimer = setInterval(() => {
+                    nextQuote(serenityCarousel, serenityQuotes, serenityIndicators,
+                        () => serenityCurrentIndex,
+                        (val) => { serenityCurrentIndex = val; }
+                    );
+                }, AUTO_SWITCH_INTERVAL);
+            }
+
+            function startWealthAutoSwitch() {
+                stopWealthTimer();
+                wealthTimer = setInterval(() => {
+                    nextQuote(wealthCarousel, wealthQuotes, wealthIndicators,
+                        () => wealthCurrentIndex,
+                        (val) => { wealthCurrentIndex = val; }
+                    );
+                }, AUTO_SWITCH_INTERVAL);
+            }
+
+            function stopSerenityTimer() {
+                if (serenityTimer) {
+                    clearInterval(serenityTimer);
+                    serenityTimer = null;
+                }
+            }
+
+            function stopWealthTimer() {
+                if (wealthTimer) {
+                    clearInterval(wealthTimer);
+                    wealthTimer = null;
+                }
+            }
+
+            function restartSerenityTimer() {
+                stopSerenityTimer();
+                startSerenityAutoSwitch();
+            }
+
+            function restartWealthTimer() {
+                stopWealthTimer();
+                startWealthAutoSwitch();
+            }
+
+            // ============ 触摸滑动支持 ============
+            function handleTouchStart(e) {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }
+
+            function handleTouchEnd(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                const diffX = touchEndX - touchStartX;
+                const diffY = touchEndY - touchStartY;
+
+                // 判断是否为有效水平滑动
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > SWIPE_THRESHOLD) {
+                    // 判断当前在哪个详情页
+                    if (serenityPage.classList.contains('active')) {
+                        if (diffX < 0) {
+                            // 左滑 - 下一个
+                            nextQuote(serenityCarousel, serenityQuotes, serenityIndicators,
+                                () => serenityCurrentIndex,
+                                (val) => { serenityCurrentIndex = val; }
+                            );
+                        } else {
+                            // 右滑 - 上一个
+                            const prev = (serenityCurrentIndex - 1 + serenityQuotes.length) % serenityQuotes
+                                .length;
+                            showQuote(serenityCarousel, serenityQuotes, prev);
+                            buildIndicators(serenityIndicators, serenityQuotes.length, prev);
+                            serenityCurrentIndex = prev;
+                        }
+                        restartSerenityTimer();
+                    } else if (wealthPage.classList.contains('active')) {
+                        if (diffX < 0) {
+                            nextQuote(wealthCarousel, wealthQuotes, wealthIndicators,
+                                () => wealthCurrentIndex,
+                                (val) => { wealthCurrentIndex = val; }
+                            );
+                        } else {
+                            const prev = (wealthCurrentIndex - 1 + wealthQuotes.length) % wealthQuotes.length;
+                            showQuote(wealthCarousel, wealthQuotes, prev);
+                            buildIndicators(wealthIndicators, wealthQuotes.length, prev);
+                            wealthCurrentIndex = prev;
+                        }
+                        restartWealthTimer();
+                    }
+                }
+            }
+
+            // 绑定触摸事件到详情页的轮播区
+            if (serenityCarousel) {
+                serenityCarousel.addEventListener('touchstart', handleTouchStart, { passive: true });
+                serenityCarousel.addEventListener('touchend', handleTouchEnd, { passive: true });
+            }
+            if (wealthCarousel) {
+                wealthCarousel.addEventListener('touchstart', handleTouchStart, { passive: true });
+                wealthCarousel.addEventListener('touchend', handleTouchEnd, { passive: true });
+            }
+
+            // ============ 键盘导航（桌面调试用） ============
+            document.addEventListener('keydown', function(e) {
+                if (serenityPage.classList.contains('active')) {
+                    if (e.key === 'ArrowRight') {
+                        nextQuote(serenityCarousel, serenityQuotes, serenityIndicators,
+                            () => serenityCurrentIndex,
+                            (val) => { serenityCurrentIndex = val; }
+                        );
+                        restartSerenityTimer();
+                    } else if (e.key === 'ArrowLeft') {
+                        const prev = (serenityCurrentIndex - 1 + serenityQuotes.length) % serenityQuotes.length;
+                        showQuote(serenityCarousel, serenityQuotes, prev);
+                        buildIndicators(serenityIndicators, serenityQuotes.length, prev);
+                        serenityCurrentIndex = prev;
+                        restartSerenityTimer();
+                    } else if (e.key === 'Escape') {
+                        goHome();
+                    }
+                } else if (wealthPage.classList.contains('active')) {
+                    if (e.key === 'ArrowRight') {
+                        nextQuote(wealthCarousel, wealthQuotes, wealthIndicators,
+                            () => wealthCurrentIndex,
+                            (val) => { wealthCurrentIndex = val; }
+                        );
+                        restartWealthTimer();
+                    } else if (e.key === 'ArrowLeft') {
+                        const prev = (wealthCurrentIndex - 1 + wealthQuotes.length) % wealthQuotes.length;
+                        showQuote(wealthCarousel, wealthQuotes, prev);
+                        buildIndicators(wealthIndicators, wealthQuotes.length, prev);
+                        wealthCurrentIndex = prev;
+                        restartWealthTimer();
+                    } else if (e.key === 'Escape') {
+                        goHome();
+                    }
+                }
+            });
+
+            // ============ 初始化 ============
+            function init() {
+                loadCustomBackground();
+                // 初始构建指示器
+                buildIndicators(serenityIndicators, serenityQuotes.length, 0);
+                buildIndicators(wealthIndicators, wealthQuotes.length, 0);
+                // 初始显示第一条
+                showQuote(serenityCarousel, serenityQuotes, 0);
+                showQuote(wealthCarousel, wealthQuotes, 0);
+                // 根据是否有自定义背景显示重置按钮
+                try {
+                    if (localStorage.getItem('customHomeBg')) {
+                        bgResetBtn.style.display = 'inline-flex';
+                    } else {
+                        bgResetBtn.style.display = 'none';
+                    }
+                } catch (e) {
+                    bgResetBtn.style.display = 'none';
+                }
+            }
+
+            // ============ 页面可见性变化时管理定时器 ============
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopAllTimers();
+                } else {
+                    if (serenityPage.classList.contains('active')) {
+                        resetCarouselAnimation(serenityCarousel);
+                        startSerenityAutoSwitch();
+                    } else if (wealthPage.classList.contains('active')) {
+                        resetCarouselAnimation(wealthCarousel);
+                        startWealthAutoSwitch();
+                    }
+                }
+            });
+
+            // ============ 暴露到全局 ============
+            window.openDetail = openDetail;
+            window.goHome = goHome;
+            window.handleBgUpload = handleBgUpload;
+            window.resetBackground = resetBackground;
+
+            // 启动
+            init();
+
+            console.log('🌿 每日激励 H5 已就绪');
+            console.log('  🍃 心平气和 - ' + serenityQuotes.length + '条语录');
+            console.log('  ✨ 日进斗金 - ' + wealthQuotes.length + '条语录');
+            console.log('  📱 支持触摸滑动切换语录');
+            console.log('  🖼️ 点击底部按钮上传自定义背景');
+            console.log('  ⌨️ 桌面端支持键盘左右箭头切换');
+        })();
+    </script>
+</body>
+</html>
